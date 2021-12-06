@@ -9,7 +9,11 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.opensearch.action.admin.indices.create.CreateIndexResponse;
+import org.opensearch.action.bulk.BulkRequest;
+import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexRequest;
+import org.opensearch.action.index.IndexResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
@@ -57,27 +61,34 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
 
         credentialsProvider.setCredentials(
                 AuthScope.ANY,
-                new UsernamePasswordCredentials("jeremy", "abc123"));
+                new UsernamePasswordCredentials("jeremy", "Fm3oJMaj!"));
         RestClientBuilder builder = RestClient.builder(new HttpHost(hostname, port, scheme))
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
 
         client = new RestHighLevelClient(builder);
+
     }
 
     @Override
     protected void submitRequestEntries(
             List<String> requestEntries,
             Consumer<Collection<String>> requestResult) {
-
-        IndexRequest request = new IndexRequest(indexName);
+        System.out.println("creating new hashmap");
         HashMap<String, String> stringMapping = new HashMap<String, String>();
+        System.out.println("created hashmap, creating new index / bulk requests");
+        BulkRequest bulkRequest = new BulkRequest(indexName);
+        IndexRequest request = new IndexRequest(indexName);
+
         for(String element : requestEntries)
         {
             stringMapping.put("message", element);
         }
+
         request.source(stringMapping);
+        bulkRequest.add(request);
+
         try {
-            client.index(request, RequestOptions.DEFAULT);
+            BulkResponse indexResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
         }
         catch(IOException ex)
         {

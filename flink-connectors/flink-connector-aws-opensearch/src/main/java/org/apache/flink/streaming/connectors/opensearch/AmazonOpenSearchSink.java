@@ -11,19 +11,19 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<String, String> {
+public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
 
     private final String indexName;
     private final String hostname;
     private final int port;
     private final String scheme;
-    private static final ElementConverter<String, String> ELEMENT_CONVERTER = ((element, context) -> element);
-    private static final int MAX_BATCH_SIZE = 2;
-    private static final int MAX_IN_FLIGHT_REQUESTS = 10;
-    private static final int MAX_BUFFERERED_REQUESTS = 100;
-    private static final int MAX_BATCH_SIZE_IN_BYTES = 5000;
-    private static final int MAX_TIME_IN_BUFFER_MS = 1000;
-    private static final int MAX_RECORD_SIZE_IN_BYTES = 50;
+    private static final ElementConverter<Object, String> ELEMENT_CONVERTER = ((element, context) -> element.toString());
+    private static final int MAX_BATCH_SIZE = 1;
+    private static final int MAX_IN_FLIGHT_REQUESTS = 5; // must be > max_batch_size
+    private static final int MAX_BUFFERED_REQUESTS = 100;
+    private static final int MAX_BATCH_SIZE_IN_BYTES = 100_000_000;
+    private static final int MAX_TIME_IN_BUFFER_MS = 200;
+    private static final int MAX_RECORD_SIZE_IN_BYTES = 100_000_000;
 
 
     public AmazonOpenSearchSink(
@@ -32,10 +32,10 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<String, String> 
             int port,
             String scheme) {
         super(
-                ELEMENT_CONVERTER,
+                (ElementConverter<InputT, String>) ELEMENT_CONVERTER,
                 MAX_BATCH_SIZE,
                 MAX_IN_FLIGHT_REQUESTS,
-                MAX_BUFFERERED_REQUESTS,
+                MAX_BUFFERED_REQUESTS,
                 MAX_BATCH_SIZE_IN_BYTES,
                 MAX_TIME_IN_BUFFER_MS,
                 MAX_RECORD_SIZE_IN_BYTES);
@@ -45,17 +45,18 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<String, String> 
         this.scheme = scheme;
     }
 
+
     @Override
-    public SinkWriter<String, Void, Collection<String>> createWriter(
+    public SinkWriter<InputT, Void, Collection<String>> createWriter(
             InitContext context,
             List<Collection<String>> states) throws IOException {
-        System.out.println("creating writer...");
-        return new AmazonOpenSearchSinkWriter(ELEMENT_CONVERTER, context,
-                MAX_BATCH_SIZE, MAX_IN_FLIGHT_REQUESTS,
-                MAX_IN_FLIGHT_REQUESTS, MAX_BATCH_SIZE_IN_BYTES,
-                MAX_TIME_IN_BUFFER_MS, MAX_RECORD_SIZE_IN_BYTES,
-                hostname, port, scheme, indexName);
-    }
+            System.out.println("creating writer...");
+            return new AmazonOpenSearchSinkWriter(ELEMENT_CONVERTER, context,
+                    MAX_BATCH_SIZE, MAX_IN_FLIGHT_REQUESTS,
+                    MAX_IN_FLIGHT_REQUESTS, MAX_BATCH_SIZE_IN_BYTES,
+                    MAX_TIME_IN_BUFFER_MS, MAX_RECORD_SIZE_IN_BYTES,
+                    hostname, port, scheme, indexName);
+        }
 
     @Override
     public Optional<SimpleVersionedSerializer<Collection<String>>> getWriterStateSerializer() {
