@@ -17,6 +17,7 @@ import org.opensearch.client.RestHighLevelClient;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -49,14 +50,14 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
                 maxRecordSizeInBytes);
         this.indexName = indexName;
 
-
+        System.out.println("initializing connection");
         //Establish credentials to use basic authentication.
         //Only for demo purposes. Do not specify your credentials in code.
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
         credentialsProvider.setCredentials(
                 AuthScope.ANY,
-                new UsernamePasswordCredentials("admin", "admin"));
+                new UsernamePasswordCredentials("jeremy", "abc123"));
         RestClientBuilder builder = RestClient.builder(new HttpHost(hostname, port, scheme))
                 .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
 
@@ -69,7 +70,12 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
             Consumer<Collection<String>> requestResult) {
 
         IndexRequest request = new IndexRequest(indexName);
-        request.source(requestEntries);
+        HashMap<String, String> stringMapping = new HashMap<String, String>();
+        for(String element : requestEntries)
+        {
+            stringMapping.put("message", element);
+        }
+        request.source(stringMapping);
         try {
             client.index(request, RequestOptions.DEFAULT);
         }

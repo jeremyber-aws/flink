@@ -18,15 +18,15 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<String, String> 
     private final int port;
     private final String scheme;
     private static final ElementConverter<String, String> ELEMENT_CONVERTER = ((element, context) -> element);
-    private static final int MAX_BATCH_SIZE = 1;
-    private static final int MAX_IN_FLIGHT_REQUESTS = 1;
-    private static final int MAX_BUFFERERED_REQUESTS = 1;
-    private static final int MAX_BATCH_SIZE_IN_BYTES = 100_000_000;
-    private static final int MAX_TIME_IN_BUFFER_MS = 200;
-    private static final int MAX_RECORD_SIZE_IN_BYTES = 100_000;
+    private static final int MAX_BATCH_SIZE = 2;
+    private static final int MAX_IN_FLIGHT_REQUESTS = 10;
+    private static final int MAX_BUFFERERED_REQUESTS = 100;
+    private static final int MAX_BATCH_SIZE_IN_BYTES = 5000;
+    private static final int MAX_TIME_IN_BUFFER_MS = 1000;
+    private static final int MAX_RECORD_SIZE_IN_BYTES = 50;
 
 
-    protected AmazonOpenSearchSink(
+    public AmazonOpenSearchSink(
             String indexName,
             String hostname,
             int port,
@@ -49,6 +49,7 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<String, String> 
     public SinkWriter<String, Void, Collection<String>> createWriter(
             InitContext context,
             List<Collection<String>> states) throws IOException {
+        System.out.println("creating writer...");
         return new AmazonOpenSearchSinkWriter(ELEMENT_CONVERTER, context,
                 MAX_BATCH_SIZE, MAX_IN_FLIGHT_REQUESTS,
                 MAX_IN_FLIGHT_REQUESTS, MAX_BATCH_SIZE_IN_BYTES,
