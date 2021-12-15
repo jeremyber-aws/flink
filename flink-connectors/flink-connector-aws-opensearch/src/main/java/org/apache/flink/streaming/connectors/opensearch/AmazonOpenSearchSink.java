@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 
+/**
+ *
+ * @param <InputT>
+ */
 public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
 
     private final String indexName;
