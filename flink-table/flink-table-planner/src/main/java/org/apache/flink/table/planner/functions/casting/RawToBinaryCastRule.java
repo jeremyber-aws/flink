@@ -18,9 +18,9 @@
 
 package org.apache.flink.table.planner.functions.casting;
 
-import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.table.types.logical.LogicalTypeFamily;
+import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.utils.LogicalTypeChecks;
 
 import java.util.Arrays;
@@ -30,44 +30,42 @@ import static org.apache.flink.table.planner.functions.casting.CastRuleUtils.arr
 import static org.apache.flink.table.planner.functions.casting.CastRuleUtils.methodCall;
 import static org.apache.flink.table.planner.functions.casting.CastRuleUtils.staticCall;
 
-/**
- * {@link LogicalTypeFamily#CHARACTER_STRING} to {@link LogicalTypeFamily#BINARY_STRING} cast rule.
- */
-class StringToBinaryCastRule extends AbstractNullAwareCodeGeneratorCastRule<StringData, byte[]> {
+/** {@link LogicalTypeRoot#RAW} to {@link LogicalTypeFamily#BINARY_STRING} cast rule. */
+class RawToBinaryCastRule extends AbstractNullAwareCodeGeneratorCastRule<Object, byte[]> {
 
-    static final StringToBinaryCastRule INSTANCE = new StringToBinaryCastRule();
+    static final RawToBinaryCastRule INSTANCE = new RawToBinaryCastRule();
 
-    private StringToBinaryCastRule() {
+    private RawToBinaryCastRule() {
         super(
                 CastRulePredicate.builder()
-                        .input(LogicalTypeFamily.CHARACTER_STRING)
+                        .input(LogicalTypeRoot.RAW)
                         .target(LogicalTypeFamily.BINARY_STRING)
                         .build());
     }
 
-    /* Example generated code for BINARY(2):
+    /* Example generated code for BINARY(3):
 
     // legacy behavior
-    isNull$0 = _myInputIsNull;
-    if (!isNull$0) {
-        result$1 = _myInput.toBytes();
-        isNull$0 = result$1 == null;
+    isNull$290 = isNull$289;
+    if (!isNull$290) {
+        result$291 = result$289.toBytes(typeSerializer$292);
+        isNull$290 = result$291 == null;
     } else {
-        result$1 = null;
+        result$291 = null;
     }
 
     // new behavior
-    isNull$0 = _myInputIsNull;
-    if (!isNull$0) {
-        byte[] byteArrayTerm$0 = _myInput.toBytes();
-        if (byteArrayTerm$0.length <= 2) {
-            result$1 = byteArrayTerm$0;
+    isNull$290 = isNull$289;
+    if (!isNull$290) {
+        byte[] deserializedByteArray$76 = result$289.toBytes(typeSerializer$292);
+        if (deserializedByteArray$76.length <= 3) {
+            result$291 = deserializedByteArray$76;
         } else {
-            result$1 = java.util.Arrays.copyOfRange(byteArrayTerm$0, 0, 2);
+            result$291 = java.util.Arrays.copyOfRange(deserializedByteArray$76, 0, 3);
         }
-        isNull$0 = result$1 == null;
+        isNull$290 = result$291 == null;
     } else {
-        result$1 = null;
+        result$291 = null;
     }
 
     */
@@ -81,25 +79,32 @@ class StringToBinaryCastRule extends AbstractNullAwareCodeGeneratorCastRule<Stri
             LogicalType targetLogicalType) {
         final int targetLength = LogicalTypeChecks.getLength(targetLogicalType);
 
-        final String byteArrayTerm = newName("byteArrayTerm");
+        // Get serializer for RAW type
+        final String typeSerializer = context.declareTypeSerializer(inputLogicalType);
+        final String deserializedByteArrayTerm = newName("deserializedByteArray");
 
         if (context.legacyBehaviour()) {
             return new CastRuleUtils.CodeWriter()
-                    .assignStmt(returnVariable, methodCall(inputTerm, "toBytes"))
+                    .assignStmt(returnVariable, methodCall(inputTerm, "toBytes", typeSerializer))
                     .toString();
         } else {
             return new CastRuleUtils.CodeWriter()
-                    .declStmt(byte[].class, byteArrayTerm, methodCall(inputTerm, "toBytes"))
+                    .declStmt(
+                            byte[].class,
+                            deserializedByteArrayTerm,
+                            methodCall(inputTerm, "toBytes", typeSerializer))
                     .ifStmt(
-                            arrayLength(byteArrayTerm) + " <= " + targetLength,
-                            thenWriter -> thenWriter.assignStmt(returnVariable, byteArrayTerm),
+                            arrayLength(deserializedByteArrayTerm) + " <= " + targetLength,
+                            thenWriter ->
+                                    thenWriter.assignStmt(
+                                            returnVariable, deserializedByteArrayTerm),
                             elseWriter ->
                                     elseWriter.assignStmt(
                                             returnVariable,
                                             staticCall(
                                                     Arrays.class,
                                                     "copyOfRange",
-                                                    byteArrayTerm,
+                                                    deserializedByteArrayTerm,
                                                     0,
                                                     targetLength)))
                     .toString();

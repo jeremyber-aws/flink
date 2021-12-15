@@ -211,8 +211,12 @@ public class CastFunctionITCase extends BuiltInFunctionTestBase {
                         // seconds are lost
                         .fromCase(TIME(5), DEFAULT_TIME, "12:34:56")
                         .fromCase(TIMESTAMP(), DEFAULT_TIMESTAMP, "2021-09-24 12:34:56.123456")
-                        .fromCase(TIMESTAMP(8), DEFAULT_TIMESTAMP, "2021-09-24 12:34:56.12345670")
+                        .fromCase(TIMESTAMP(9), DEFAULT_TIMESTAMP, "2021-09-24 12:34:56.123456700")
                         .fromCase(TIMESTAMP(4), DEFAULT_TIMESTAMP, "2021-09-24 12:34:56.1234")
+                        .fromCase(
+                                TIMESTAMP(3),
+                                LocalDateTime.parse("2021-09-24T12:34:56.1"),
+                                "2021-09-24 12:34:56.100")
                         .fromCase(TIMESTAMP(4).nullable(), null, null)
 
                         // https://issues.apache.org/jira/browse/FLINK-20869
@@ -222,6 +226,14 @@ public class CastFunctionITCase extends BuiltInFunctionTestBase {
                                 TIMESTAMP_LTZ(5),
                                 DEFAULT_TIMESTAMP_LTZ,
                                 "2021-09-25 07:54:56.12345")
+                        .fromCase(
+                                TIMESTAMP_LTZ(9),
+                                DEFAULT_TIMESTAMP_LTZ,
+                                "2021-09-25 07:54:56.123456700")
+                        .fromCase(
+                                TIMESTAMP_LTZ(3),
+                                fromLocalTZ("2021-09-24T22:34:56.1"),
+                                "2021-09-25 07:54:56.100")
                         .fromCase(INTERVAL(YEAR()), 84, "+7-00")
                         .fromCase(INTERVAL(MONTH()), 5, "+0-05")
                         .fromCase(INTERVAL(MONTH()), 123, "+10-03")
@@ -286,17 +298,15 @@ public class CastFunctionITCase extends BuiltInFunctionTestBase {
                         .build(),
                 CastTestSpecBuilder.testCastTo(BINARY(2))
                         .fromCase(BINARY(5), null, null)
-                        .fromCase(CHAR(3), "foo", new byte[] {102, 111, 111})
-                        .fromCase(VARCHAR(5), "Flink", new byte[] {70, 108, 105, 110, 107})
-                        // https://issues.apache.org/jira/browse/FLINK-24419 - not trimmed to 2
-                        // bytes
-                        .fromCase(STRING(), "Apache", new byte[] {65, 112, 97, 99, 104, 101})
+                        .fromCase(CHAR(3), "foo", new byte[] {102, 111})
+                        .fromCase(VARCHAR(5), "Flink", new byte[] {70, 108})
+                        .fromCase(STRING(), "Apache", new byte[] {65, 112})
                         // Not supported - no fix
                         .fail(BOOLEAN(), true)
                         //
                         .fromCase(BINARY(2), DEFAULT_BINARY, DEFAULT_BINARY)
-                        .fromCase(VARBINARY(3), DEFAULT_VARBINARY, DEFAULT_VARBINARY)
-                        .fromCase(BYTES(), DEFAULT_BYTES, DEFAULT_BYTES)
+                        .fromCase(VARBINARY(3), DEFAULT_VARBINARY, new byte[] {0, 1})
+                        .fromCase(BYTES(), DEFAULT_BYTES, new byte[] {0, 1})
                         // Not supported - no fix
                         .fail(DECIMAL(5, 3), 12.345)
                         .fail(TINYINT(), DEFAULT_NEGATIVE_TINY_INT)
@@ -322,16 +332,15 @@ public class CastFunctionITCase extends BuiltInFunctionTestBase {
                 CastTestSpecBuilder.testCastTo(VARBINARY(4))
                         .fromCase(VARBINARY(5), null, null)
                         .fromCase(CHAR(3), "foo", new byte[] {102, 111, 111})
-                        .fromCase(VARCHAR(5), "Flink", new byte[] {70, 108, 105, 110, 107})
-                        // https://issues.apache.org/jira/browse/FLINK-24419 - not trimmed to 2
-                        // bytes
-                        .fromCase(STRING(), "Apache", new byte[] {65, 112, 97, 99, 104, 101})
+                        .fromCase(VARCHAR(5), "Flink", new byte[] {70, 108, 105, 110})
+                        .fromCase(STRING(), "Apache", new byte[] {65, 112, 97, 99})
                         // Not supported - no fix
                         .fail(BOOLEAN(), true)
                         //
                         .fromCase(BINARY(2), DEFAULT_BINARY, DEFAULT_BINARY)
                         .fromCase(VARBINARY(3), DEFAULT_VARBINARY, DEFAULT_VARBINARY)
-                        .fromCase(BYTES(), DEFAULT_BYTES, DEFAULT_BYTES)
+                        .fromCase(VARBINARY(10), DEFAULT_VARBINARY, DEFAULT_VARBINARY)
+                        .fromCase(BYTES(), DEFAULT_BYTES, new byte[] {0, 1, 2, 3})
                         // Not supported - no fix
                         .fail(DECIMAL(5, 3), 12.345)
                         .fail(TINYINT(), DEFAULT_NEGATIVE_TINY_INT)
