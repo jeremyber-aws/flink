@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/** */
 public class MyEvent {
-    public MyEvent() {
-    }
+    public MyEvent() {}
 
     public MyEvent(long valueIn) {
         value = valueIn;
@@ -25,24 +25,34 @@ public class MyEvent {
     }
 
     public Timestamp timestamp;
+
     public Timestamp getTimestamp() {
         return timestamp;
     }
+
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
 
     public long value;
+
     public long getValue() {
         return value;
     }
+
     public void setValue(long valueIn) {
         value = valueIn;
     }
 
     public long id;
-    public long getId() { return id; }
-    public void setId(long id) { id = id; }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        id = id;
+    }
 
     @Override
     public String toString() {
@@ -55,10 +65,11 @@ public class MyEvent {
         }
     }
 
-    public MyEvent GetSampleEvents() {
+    public MyEvent getSampleEvents() {
         List<MyEvent> events = new ArrayList<>();
 
         long initMillis = System.currentTimeMillis();
-        return new MyEvent(new Random().nextLong(), new Random().nextInt(5), new Timestamp(initMillis));
+        return new MyEvent(
+                new Random().nextLong(), new Random().nextInt(5), new Timestamp(initMillis));
     }
 }
