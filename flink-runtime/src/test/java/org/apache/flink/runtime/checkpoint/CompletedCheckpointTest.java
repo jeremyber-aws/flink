@@ -24,6 +24,7 @@ import org.apache.flink.core.testutils.CommonTestUtils;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.OperatorID;
 import org.apache.flink.runtime.state.SharedStateRegistry;
+import org.apache.flink.runtime.state.SharedStateRegistryImpl;
 import org.apache.flink.runtime.state.testutils.EmptyStreamStateHandle;
 import org.apache.flink.runtime.state.testutils.TestCompletedCheckpointStorageLocation;
 
@@ -224,9 +225,9 @@ public class CompletedCheckpointTest {
                                 CheckpointRetentionPolicy.RETAIN_ON_FAILURE),
                         new TestCompletedCheckpointStorageLocation());
 
-        SharedStateRegistry sharedStateRegistry = new SharedStateRegistry();
+        SharedStateRegistry sharedStateRegistry = new SharedStateRegistryImpl();
         checkpoint.registerSharedStatesAfterRestored(sharedStateRegistry);
-        verify(state, times(1)).registerSharedStates(sharedStateRegistry);
+        verify(state, times(1)).registerSharedStates(sharedStateRegistry, 0L);
     }
 
     /** Tests that the garbage collection properties are respected when subsuming checkpoints. */
@@ -255,9 +256,9 @@ public class CompletedCheckpointTest {
                         props,
                         location);
 
-        SharedStateRegistry sharedStateRegistry = new SharedStateRegistry();
+        SharedStateRegistry sharedStateRegistry = new SharedStateRegistryImpl();
         checkpoint.registerSharedStatesAfterRestored(sharedStateRegistry);
-        verify(state, times(1)).registerSharedStates(sharedStateRegistry);
+        verify(state, times(1)).registerSharedStates(sharedStateRegistry, 0L);
 
         // Subsume
         checkpoint.discardOnSubsume();
