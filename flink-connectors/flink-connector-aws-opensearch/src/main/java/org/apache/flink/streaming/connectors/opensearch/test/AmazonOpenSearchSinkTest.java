@@ -32,11 +32,12 @@ public class AmazonOpenSearchSinkTest {
                                 "input-stream", new SimpleStringSchema(), consumerConfig));
 
         stream.sinkTo(
-                new AmazonOpenSearchSink(
-                        "my-kds-events",
-                        "search-playground-2ftaid4l2gqnvk2pbirluxblkq.us-east-1.es.amazonaws.com",
-                        443,
-                        "https"));
+                new AmazonOpenSearchSink<>(
+                        "https://search-playground-2ftaid4l2gqnvk2pbirluxblkq.us-east-1.es.amazonaws.com",
+                        "admin",
+                        "HappyClip#1",
+                        "my-kds-events"
+                ));
 
         env.execute();
     }
