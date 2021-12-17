@@ -7,7 +7,6 @@ import org.apache.flink.connector.base.sink.writer.ElementConverter;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.opensearch.action.bulk.BulkItemResponse;
 import org.opensearch.action.bulk.BulkRequest;
@@ -21,6 +20,7 @@ import org.opensearch.common.xcontent.XContentType;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -39,7 +39,7 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
             long maxBatchSizeInBytes,
             long maxTimeInBufferMS,
             long maxRecordSizeInBytes,
-            String esUrl,
+            String osUrl,
             String userName,
             String password,
             String indexName) {
@@ -56,12 +56,11 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
 
         System.out.println("initializing connection");
         // Establish credentials to use basic authentication.
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(
                 AuthScope.ANY, new UsernamePasswordCredentials(userName, password));
-
         client = new RestHighLevelClient(
-                RestClient.builder(HttpHost.create(esUrl)).setHttpClientConfigCallback(
+                RestClient.builder(HttpHost.create(osUrl)).setHttpClientConfigCallback(
                         httpClientBuilder -> httpClientBuilder
                                 .setDefaultCredentialsProvider(credentialsProvider)
                 ));
@@ -90,11 +89,13 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
                             + requestEntries.size()
                             + " documents took "
                             + bulkResponse.getIngestTookInMillis());
-//            client.close(); // close the client otherwise it leaves too many open files.
         } catch (IOException ex) {
             ex.printStackTrace();
             System.exit(1);
         }
+        //commit the messages as all of them processed.
+        //TODO: look for failure messages in bulkResponse.
+        requestResult.accept(Collections.emptyList());
     }
 
     @Override
