@@ -16,31 +16,40 @@
  * limitations under the License.
  */
 
-package org.apache.flink.table.planner.expressions;
+package org.apache.flink.formats.parquet.avro;
 
-import org.apache.flink.table.types.logical.LogicalType;
-import org.apache.flink.table.types.logical.TimestampType;
+import java.io.Serializable;
 
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonCreator;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonTypeName;
+/** Test datum. */
+public class Datum implements Serializable {
 
-/** Slice end property. */
-@JsonTypeName("SliceEnd")
-public class PlannerSliceEnd extends AbstractPlannerWindowProperty {
+    public String a;
+    public int b;
 
-    @JsonCreator
-    public PlannerSliceEnd(@JsonProperty(FIELD_NAME_REFERENCE) PlannerWindowReference reference) {
-        super(reference);
+    public Datum() {}
+
+    public Datum(String a, int b) {
+        this.a = a;
+        this.b = b;
     }
 
     @Override
-    public LogicalType getResultType() {
-        return new TimestampType(3);
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Datum datum = (Datum) o;
+        return b == datum.b && (a != null ? a.equals(datum.a) : datum.a == null);
     }
 
     @Override
-    public String toString() {
-        return String.format("slice_end(%s)", reference);
+    public int hashCode() {
+        int result = a != null ? a.hashCode() : 0;
+        result = 31 * result + b;
+        return result;
     }
 }

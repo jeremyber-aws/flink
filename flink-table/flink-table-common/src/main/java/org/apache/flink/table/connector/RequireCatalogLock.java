@@ -16,24 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.flink.table.planner.expressions;
+package org.apache.flink.table.connector;
 
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.flink.annotation.Internal;
+import org.apache.flink.table.catalog.CatalogLock;
 
-/** The base class of {@link PlannerWindowProperty}. */
-public abstract class AbstractPlannerWindowProperty implements PlannerWindowProperty {
+/** Source and sink implement this interface if they require {@link CatalogLock}. */
+@Internal
+public interface RequireCatalogLock {
 
-    public static final String FIELD_NAME_REFERENCE = "reference";
-
-    @JsonProperty(FIELD_NAME_REFERENCE)
-    protected final PlannerWindowReference reference;
-
-    protected AbstractPlannerWindowProperty(PlannerWindowReference reference) {
-        this.reference = reference;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("WindowProperty(%s)", reference);
-    }
+    /** Set catalog lock factory to the connector. */
+    void setLockFactory(CatalogLock.Factory lockFactory);
 }
