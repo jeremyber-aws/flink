@@ -16,17 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.flink.state.api;
+package org.apache.flink.state.api.output;
 
-import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
-import org.apache.flink.runtime.state.StateBackend;
-import org.apache.flink.runtime.state.memory.MemoryStateBackend;
+import org.apache.flink.annotation.Internal;
+import org.apache.flink.streaming.runtime.streamrecord.StreamElement;
 
-/** IT Case for reading state from a RocksDB keyed state backend. */
-public class RocksDBStateBackendReaderKeyedStateITCase
-        extends SavepointReaderKeyedStateITCase<RocksDBStateBackend> {
-    @Override
-    protected RocksDBStateBackend getStateBackend() {
-        return new RocksDBStateBackend((StateBackend) new MemoryStateBackend());
-    }
+/** A marker element that there is no more data to process. */
+@Internal
+class EndOfDataMarker extends StreamElement {
+
+    static final EndOfDataMarker INSTANCE = new EndOfDataMarker();
+
+    private EndOfDataMarker() {}
 }
