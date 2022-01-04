@@ -4,18 +4,18 @@ import org.apache.flink.api.connector.sink.SinkWriter;
 import org.apache.flink.connector.base.sink.AsyncSinkBase;
 import org.apache.flink.connector.base.sink.writer.ElementConverter;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
+import org.apache.flink.util.Preconditions;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 /** */
 public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
 
-    private final String indexName;
     private final String osUrl;
-    private final String userName;
-    private final String password;
+    private Properties openSearchClientProperties;
 
     private static final ElementConverter<Object, String> ELEMENT_CONVERTER =
             ((element, context) -> element.toString());
@@ -26,7 +26,7 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> 
     private static final int MAX_TIME_IN_BUFFER_MS = 1000;
     private static final int MAX_RECORD_SIZE_IN_BYTES = 10000000;
 
-    public AmazonOpenSearchSink(String osUrl, String username, String password, String indexName) {
+    public AmazonOpenSearchSink(String osUrl, Properties openSearchClientProperties) {
         super(
                 (ElementConverter<InputT, String>) ELEMENT_CONVERTER,
                 MAX_BATCH_SIZE,
@@ -35,10 +35,11 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> 
                 MAX_BATCH_SIZE_IN_BYTES,
                 MAX_TIME_IN_BUFFER_MS,
                 MAX_RECORD_SIZE_IN_BYTES);
-        this.indexName = indexName;
-        this.osUrl = osUrl;
-        this.userName = username;
-        this.password = password;
+        this.osUrl =
+                Preconditions.checkNotNull(
+                        osUrl,
+                        "The OpenSearch host url name must not be null when initializing the OpenSearch Sink.");
+        this.openSearchClientProperties = openSearchClientProperties;
     }
 
     @Override
@@ -55,9 +56,7 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> 
                 MAX_TIME_IN_BUFFER_MS,
                 MAX_RECORD_SIZE_IN_BYTES,
                 osUrl,
-                userName,
-                password,
-                indexName);
+                openSearchClientProperties);
     }
 
     @Override

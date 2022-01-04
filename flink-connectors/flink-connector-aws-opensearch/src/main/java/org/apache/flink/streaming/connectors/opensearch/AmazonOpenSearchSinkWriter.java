@@ -17,11 +17,17 @@ import org.opensearch.client.Requests;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.common.xcontent.XContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 /** */
@@ -29,6 +35,7 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
 
     private final RestHighLevelClient client;
     private final String indexName;
+    private static final Logger LOG = LoggerFactory.getLogger(AmazonOpenSearchSinkWriter.class);
 
     public AmazonOpenSearchSinkWriter(
             ElementConverter<InputT, String> elementConverter,
@@ -36,13 +43,11 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
             int maxBatchSize,
             int maxInFlightRequests,
             int maxBufferedRequests,
-            long maxBatchSizeInBytes,
-            long maxTimeInBufferMS,
-            long maxRecordSizeInBytes,
+            int maxBatchSizeInBytes,
+            int maxTimeInBufferMS,
+            int maxRecordSizeInBytes,
             String osUrl,
-            String userName,
-            String password,
-            String indexName) {
+            Properties openSearchClientProperties) {
         super(
                 elementConverter,
                 context,
@@ -52,26 +57,54 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
                 maxBatchSizeInBytes,
                 maxTimeInBufferMS,
                 maxRecordSizeInBytes);
-        this.indexName = indexName;
+        this.client = buildRestClient(osUrl, openSearchClientProperties);
+        this.indexName =
+                Optional.ofNullable(
+                                openSearchClientProperties.getProperty(
+                                        OpenSearchConfigConstants.INDEX_NAME))
+                        .orElse(getDefaultIndexName());
+    }
 
-        System.out.println("initializing connection");
-        // Establish credentials to use basic authentication.
-        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(
-                AuthScope.ANY, new UsernamePasswordCredentials(userName, password));
-        client = new RestHighLevelClient(
-                RestClient.builder(HttpHost.create(osUrl)).setHttpClientConfigCallback(
-                        httpClientBuilder -> httpClientBuilder
-                                .setDefaultCredentialsProvider(credentialsProvider)
-                ));
+    private String getDefaultIndexName() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        return format.format(LocalDate.now());
+    }
 
+    private RestHighLevelClient buildRestClient(
+            String osUrl, Properties openSearchClientProperties) {
+        RestHighLevelClient client;
+        // if username, password is available in properties
+        if (openSearchClientProperties.containsKey(
+                        OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME)
+                && openSearchClientProperties.contains(
+                        OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD)) {
+            String userName =
+                    openSearchClientProperties.getProperty(
+                            OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME);
+            String password =
+                    openSearchClientProperties.getProperty(
+                            OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD);
+            final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(
+                    AuthScope.ANY, new UsernamePasswordCredentials(userName, password));
+            client =
+                    new RestHighLevelClient(
+                            RestClient.builder(HttpHost.create(osUrl))
+                                    .setHttpClientConfigCallback(
+                                            httpClientBuilder ->
+                                                    httpClientBuilder.setDefaultCredentialsProvider(
+                                                            credentialsProvider)));
+            // TODO: Other auth implementations (sigv4, etc..)
+        } else {
+            client = new RestHighLevelClient(RestClient.builder(HttpHost.create(osUrl)));
+        }
+        return client;
     }
 
     @Override
     protected void submitRequestEntries(
             List<String> requestEntries, Consumer<Collection<String>> requestResult) {
-        System.out.println("Total requestEntries " + requestEntries.size());
-        System.out.println("created hashmap, creating new index / bulk requests");
+        LOG.info("Total requestEntries :{}", requestEntries.size());
         BulkRequest bulkRequest = Requests.bulkRequest();
         for (String element : requestEntries) {
             bulkRequest.add(new IndexRequest(indexName).source(element, XContentType.JSON));
@@ -79,22 +112,21 @@ public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, 
         try {
             BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
             if (bulkResponse.hasFailures()) {
-                System.out.println(bulkResponse.buildFailureMessage());
+                LOG.error(bulkResponse.buildFailureMessage());
             }
             for (BulkItemResponse a : bulkResponse.getItems()) {
-                System.out.println("doc id ingested" + a.getId() + " " + a.getId());
+                LOG.trace("doc id ingested {} ", a.getId());
             }
-            System.out.println(
-                    "Bulk index of "
-                            + requestEntries.size()
-                            + " documents took "
-                            + bulkResponse.getIngestTookInMillis());
+            LOG.info(
+                    "Bulk index of {} documents took {}",
+                    requestEntries.size(),
+                    bulkResponse.getIngestTookInMillis());
         } catch (IOException ex) {
             ex.printStackTrace();
             System.exit(1);
         }
-        //commit the messages as all of them processed.
-        //TODO: look for failure messages in bulkResponse.
+        // commit the messages as all of them processed.
+        // TODO: look for failure messages in bulkResponse.
         requestResult.accept(Collections.emptyList());
     }
 
