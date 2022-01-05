@@ -7,6 +7,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kinesis.FlinkKinesisConsumer;
 import org.apache.flink.streaming.connectors.kinesis.config.ConsumerConfigConstants;
 import org.apache.flink.streaming.connectors.opensearch.AmazonOpenSearchSink;
+import org.apache.flink.streaming.connectors.opensearch.OpenSearchConfigConstants;
 
 import java.util.Properties;
 
@@ -30,15 +31,15 @@ public class AmazonOpenSearchSinkTest {
                 env.addSource(
                         new FlinkKinesisConsumer<>(
                                 "input-stream", new SimpleStringSchema(), consumerConfig));
-
+        stream.countWindowAll(100);
+        Properties clientConfig = new Properties();
+        clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "admin");
+        clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "xxxxxxx");
         stream.sinkTo(
                 new AmazonOpenSearchSink<>(
                         "https://search-playground-2ftaid4l2gqnvk2pbirluxblkq.us-east-1.es.amazonaws.com",
-                        "admin",
-                        "HappyClip#1",
-                        "my-kds-events"
-                ));
+                        clientConfig));
 
-        env.execute();
+        env.execute("OpenSearch Sink Job");
     }
 }
