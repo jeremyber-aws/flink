@@ -62,8 +62,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.flink.connector.file.table.DefaultPartTimeExtractor.toMills;
-import static org.apache.flink.connector.file.table.FileSystemConnectorOptions.STREAMING_SOURCE_CONSUME_START_OFFSET;
-import static org.apache.flink.connector.file.table.FileSystemConnectorOptions.STREAMING_SOURCE_ENABLE;
+import static org.apache.flink.connectors.hive.HiveOptions.STREAMING_SOURCE_CONSUME_START_OFFSET;
+import static org.apache.flink.connectors.hive.HiveOptions.STREAMING_SOURCE_ENABLE;
 import static org.apache.flink.connectors.hive.util.HivePartitionUtils.getAllPartitions;
 
 /** A TableSource implementation to read data from Hive tables. */
@@ -143,7 +143,10 @@ public class HiveTableSource
                                                     hivePartitionsToRead, jobConf),
                                     () ->
                                             HiveSourceFileEnumerator.createInputSplits(
-                                                            0, hivePartitionsToRead, jobConf)
+                                                            0,
+                                                            hivePartitionsToRead,
+                                                            flinkConf,
+                                                            jobConf)
                                                     .size())
                             .limit(limit);
             return toDataStreamSource(
