@@ -31,13 +31,13 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 /** */
-public class AmazonOpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, String> {
+public class OpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, String> {
 
     private final RestHighLevelClient client;
     private final String indexName;
-    private static final Logger LOG = LoggerFactory.getLogger(AmazonOpenSearchSinkWriter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OpenSearchSinkWriter.class);
 
-    public AmazonOpenSearchSinkWriter(
+    public OpenSearchSinkWriter(
             ElementConverter<InputT, String> elementConverter,
             Sink.InitContext context,
             int maxBatchSize,

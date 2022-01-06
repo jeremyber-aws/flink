@@ -1,18 +1,16 @@
-package org.apache.flink.streaming.connectors.opensearch.test;
-
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kinesis.FlinkKinesisConsumer;
 import org.apache.flink.streaming.connectors.kinesis.config.ConsumerConfigConstants;
-import org.apache.flink.streaming.connectors.opensearch.AmazonOpenSearchSink;
 import org.apache.flink.streaming.connectors.opensearch.OpenSearchConfigConstants;
+import org.apache.flink.streaming.connectors.opensearch.OpenSearchSink;
 
 import java.util.Properties;
 
 /** */
-public class AmazonOpenSearchSinkTest {
+public class OpenSearchSinkTest {
 
     public static void main(String[] args) throws Exception {
         // set up the streaming execution environment
@@ -36,7 +34,7 @@ public class AmazonOpenSearchSinkTest {
         clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "admin");
         clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "xxxxxxx");
         stream.sinkTo(
-                new AmazonOpenSearchSink<>(
+                new OpenSearchSink<>(
                         "https://search-playground-2ftaid4l2gqnvk2pbirluxblkq.us-east-1.es.amazonaws.com",
                         clientConfig));
 

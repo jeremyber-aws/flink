@@ -141,7 +141,7 @@ under the License.
 							<manifest>
 								<addClasspath>true</addClasspath>
 								<!-- here we specify that we want to use the main method within the App class -->
-								<mainClass>org.apache.flink.streaming.connectors.opensearch.test.AmazonOpenSearchSinkTest</mainClass>
+								<mainClass>org.apache.flink.streaming.connectors.opensearch.test.OpenSearchSinkTest</mainClass>
 							</manifest>
 						</archive>
 					</configuration>
