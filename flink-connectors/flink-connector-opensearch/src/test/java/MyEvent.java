@@ -1,11 +1,7 @@
-package org.apache.flink.streaming.connectors.opensearch.test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /** */
@@ -65,9 +61,7 @@ public class MyEvent {
         }
     }
 
-    public MyEvent getSampleEvents() {
-        List<MyEvent> events = new ArrayList<>();
-
+    public static MyEvent getSampleEvent() {
         long initMillis = System.currentTimeMillis();
         return new MyEvent(
                 new Random().nextLong(), new Random().nextInt(5), new Timestamp(initMillis));

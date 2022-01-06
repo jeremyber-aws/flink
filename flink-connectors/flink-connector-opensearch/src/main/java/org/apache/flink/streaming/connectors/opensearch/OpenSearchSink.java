@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 /** */
-public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
+public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
 
     private final String osUrl;
     private Properties openSearchClientProperties;
@@ -26,7 +26,7 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> 
     private static final int MAX_TIME_IN_BUFFER_MS = 1000;
     private static final int MAX_RECORD_SIZE_IN_BYTES = 10000000;
 
-    public AmazonOpenSearchSink(String osUrl, Properties openSearchClientProperties) {
+    public OpenSearchSink(String osUrl, Properties openSearchClientProperties) {
         super(
                 (ElementConverter<InputT, String>) ELEMENT_CONVERTER,
                 MAX_BATCH_SIZE,
@@ -46,7 +46,7 @@ public class AmazonOpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> 
     public SinkWriter<InputT, Void, Collection<String>> createWriter(
             InitContext context, List<Collection<String>> states) {
         System.out.println("creating writer...");
-        return new AmazonOpenSearchSinkWriter(
+        return new OpenSearchSinkWriter(
                 ELEMENT_CONVERTER,
                 context,
                 MAX_BATCH_SIZE,
