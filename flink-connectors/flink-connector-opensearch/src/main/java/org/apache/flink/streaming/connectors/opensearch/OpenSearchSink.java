@@ -47,7 +47,7 @@ public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
                         "The OpenSearch host url name must not be null when initializing the OpenSearch Sink.");
         this.openSearchClientProperties = openSearchClientProperties;
     }
-
+g
     /**
      * Create a {@link OpenSearchSinkBuilder} to allow the fluent construction of a new
      * {@code OpenSearchSink}.
