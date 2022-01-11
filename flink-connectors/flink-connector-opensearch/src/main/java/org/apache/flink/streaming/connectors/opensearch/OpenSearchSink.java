@@ -45,6 +45,9 @@ public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
                 Preconditions.checkNotNull(
                         osUrl,
                         "The OpenSearch host url name must not be null when initializing the OpenSearch Sink.");
+        Preconditions.checkArgument(
+                !this.osUrl.isEmpty(),
+                "The OpenSearch host url name must not be null when initializing the OpenSearch Sink.");
         this.openSearchClientProperties = openSearchClientProperties;
     }
 
