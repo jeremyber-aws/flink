@@ -43,9 +43,9 @@ public class OpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, String
             int maxBatchSize,
             int maxInFlightRequests,
             int maxBufferedRequests,
-            int maxBatchSizeInBytes,
-            int maxTimeInBufferMS,
-            int maxRecordSizeInBytes,
+            long maxBatchSizeInBytes,
+            long maxTimeInBufferMS,
+            long maxRecordSizeInBytes,
             String osUrl,
             Properties openSearchClientProperties) {
         super(

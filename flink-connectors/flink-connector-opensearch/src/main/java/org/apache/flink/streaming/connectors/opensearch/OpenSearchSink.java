@@ -6,6 +6,9 @@ import org.apache.flink.connector.base.sink.writer.ElementConverter;
 import org.apache.flink.core.io.SimpleVersionedSerializer;
 import org.apache.flink.util.Preconditions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -14,27 +17,30 @@ import java.util.Properties;
 /** */
 public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(OpenSearchSink.class);
+
     private final String osUrl;
     private Properties openSearchClientProperties;
 
     private static final ElementConverter<Object, String> ELEMENT_CONVERTER =
             ((element, context) -> element.toString());
-    private static final int MAX_BATCH_SIZE = 5000;
-    private static final int MAX_IN_FLIGHT_REQUESTS = 10000; // must be > max_batch_size
-    private static final int MAX_BUFFERED_REQUESTS = 100;
-    private static final int MAX_BATCH_SIZE_IN_BYTES = 10000000;
-    private static final int MAX_TIME_IN_BUFFER_MS = 1000;
-    private static final int MAX_RECORD_SIZE_IN_BYTES = 10000000;
 
-    public OpenSearchSink(String osUrl, Properties openSearchClientProperties) {
+    public OpenSearchSink(ElementConverter<InputT, String> elementConverter,
+                          Integer maxBatchSize,
+                          Integer maxInFlightRequests,
+                          Integer maxBufferedRequests,
+                          Long maxBatchSizeInBytes,
+                          Long maxTimeInBufferMS,
+                          Long maxRecordSizeInBytes,
+                          String osUrl, Properties openSearchClientProperties) {
         super(
-                (ElementConverter<InputT, String>) ELEMENT_CONVERTER,
-                MAX_BATCH_SIZE,
-                MAX_IN_FLIGHT_REQUESTS,
-                MAX_BUFFERED_REQUESTS,
-                MAX_BATCH_SIZE_IN_BYTES,
-                MAX_TIME_IN_BUFFER_MS,
-                MAX_RECORD_SIZE_IN_BYTES);
+                elementConverter,
+                maxBatchSize,
+                maxInFlightRequests,
+                maxBufferedRequests,
+                maxBatchSizeInBytes,
+                maxTimeInBufferMS,
+                maxRecordSizeInBytes);
         this.osUrl =
                 Preconditions.checkNotNull(
                         osUrl,
@@ -42,19 +48,30 @@ public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
         this.openSearchClientProperties = openSearchClientProperties;
     }
 
+    /**
+     * Create a {@link OpenSearchSinkBuilder} to allow the fluent construction of a new
+     * {@code OpenSearchSink}.
+     *
+     * @param <InputT> type of incoming records
+     * @return {@link OpenSearchSinkBuilder}
+     */
+    public static <InputT> OpenSearchSinkBuilder<InputT> builder() {
+        return new OpenSearchSinkBuilder<>();
+    }
+
     @Override
     public SinkWriter<InputT, Void, Collection<String>> createWriter(
             InitContext context, List<Collection<String>> states) {
-        System.out.println("creating writer...");
+        LOG.info("creating writer...");
         return new OpenSearchSinkWriter(
-                ELEMENT_CONVERTER,
+                getElementConverter(),
                 context,
-                MAX_BATCH_SIZE,
-                MAX_IN_FLIGHT_REQUESTS,
-                MAX_IN_FLIGHT_REQUESTS,
-                MAX_BATCH_SIZE_IN_BYTES,
-                MAX_TIME_IN_BUFFER_MS,
-                MAX_RECORD_SIZE_IN_BYTES,
+                getMaxBatchSize(),
+                getMaxInFlightRequests(),
+                getMaxBufferedRequests(),
+                getMaxBatchSizeInBytes(),
+                getMaxTimeInBufferMS(),
+                getMaxRecordSizeInBytes(),
                 osUrl,
                 openSearchClientProperties);
     }

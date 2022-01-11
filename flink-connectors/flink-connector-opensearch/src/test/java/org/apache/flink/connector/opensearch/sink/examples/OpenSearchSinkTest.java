@@ -1,3 +1,5 @@
+package org.apache.flink.connector.opensearch.sink.examples;
+
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -32,11 +34,13 @@ public class OpenSearchSinkTest {
         stream.countWindowAll(100);
         Properties clientConfig = new Properties();
         clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "admin");
-        clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "xxxxxxx");
-        stream.sinkTo(
-                new OpenSearchSink<>(
-                        "https://search-playground-2ftaid4l2gqnvk2pbirluxblkq.us-east-1.es.amazonaws.com",
-                        clientConfig));
+        clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "xxxxxx");
+        stream.sinkTo(OpenSearchSink.<String>builder()
+                .setOpenSearchHost("https://opensearch-xxxx-xxx.us-east-1.es.amazonaws.com")
+                .setOpenSearchClientProperties(clientConfig)
+                .setElementConverter(((element, context) -> element))
+                .build()
+        );
 
         env.execute("OpenSearch Sink Job");
     }
