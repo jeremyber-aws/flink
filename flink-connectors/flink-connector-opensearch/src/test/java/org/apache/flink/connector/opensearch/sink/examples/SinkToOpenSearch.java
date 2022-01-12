@@ -12,7 +12,7 @@ import org.apache.flink.streaming.connectors.opensearch.OpenSearchSink;
 import java.util.Properties;
 
 /** */
-public class OpenSearchSinkTest {
+public class SinkToOpenSearch {
 
     public static void main(String[] args) throws Exception {
         // set up the streaming execution environment
