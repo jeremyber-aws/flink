@@ -16,26 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.flink.streaming.runtime.tasks;
+package org.apache.flink.connector.pulsar.source.reader.source;
 
-import org.apache.flink.annotation.Internal;
+import org.apache.flink.connector.pulsar.testutils.extension.SubType;
 
-/**
- * Interface for processing-time callbacks that can be registered at a {@link
- * ProcessingTimeService}.
- */
-@Internal
-@FunctionalInterface
-public interface ProcessingTimeCallback {
+import org.apache.pulsar.client.api.SubscriptionType;
 
-    /**
-     * This method is invoked with the timestamp for which the trigger was scheduled.
-     *
-     * <p>If the triggering is delayed for whatever reason (trigger timer was blocked, JVM stalled
-     * due to a garbage collection), the timestamp supplied to this function will still be the
-     * original timestamp for which the trigger was scheduled.
-     *
-     * @param timestamp The timestamp for which the trigger event was scheduled.
-     */
-    void onProcessingTime(long timestamp) throws Exception;
+class PulsarUnorderedSourceReaderTest extends PulsarSourceReaderTestBase {
+    @SubType SubscriptionType subscriptionType = SubscriptionType.Shared;
 }
