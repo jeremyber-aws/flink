@@ -7,10 +7,11 @@ import java.util.Properties;
 
 /**
  * OpenSearch Sink Builder.
+ *
  * @param <InputT>
  */
-public class OpenSearchSinkBuilder<InputT> extends AsyncSinkBaseBuilder<
-        InputT, String, OpenSearchSinkBuilder<InputT>> {
+public class OpenSearchSinkBuilder<InputT>
+        extends AsyncSinkBaseBuilder<InputT, String, OpenSearchSinkBuilder<InputT>> {
 
     private static final int DEFAULT_MAX_BATCH_SIZE = 5000;
     private static final int DEFAULT_MAX_IN_FLIGHT_REQUESTS = 10000; // must be > max_batch_size
@@ -22,7 +23,7 @@ public class OpenSearchSinkBuilder<InputT> extends AsyncSinkBaseBuilder<
     private String osUrl;
     private Properties openSearchClientProperties;
 
-    OpenSearchSinkBuilder(){}
+    OpenSearchSinkBuilder() {}
 
     /**
      * Sets the OpenSearch domain URL that the sink will connect to. There is no default for this
@@ -55,7 +56,6 @@ public class OpenSearchSinkBuilder<InputT> extends AsyncSinkBaseBuilder<
                 Optional.ofNullable(getMaxTimeInBufferMS()).orElse(DEFAULT_MAX_TIME_IN_BUFFER_MS),
                 Optional.ofNullable(getMaxRecordSizeInBytes()).orElse(DEFAULT_MAX_RECORD_SIZE_IN_B),
                 osUrl,
-                openSearchClientProperties
-        );
+                openSearchClientProperties);
     }
 }

@@ -5,17 +5,15 @@ import org.apache.flink.streaming.connectors.opensearch.OpenSearchSink;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+/** Builder Test. */
 public class OpenSearchSinkBuilderTest {
 
     @Test
     public void elementConverterOfSinkMustBeSetWhenBuilt() {
         Assertions.assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> OpenSearchSink
-                        .builder()
-                        .setOpenSearchHost("https://dummy")
-                        .build())
-                .withMessageContaining(
-                        "ElementConverter must be not null");
+                .isThrownBy(
+                        () -> OpenSearchSink.builder().setOpenSearchHost("https://dummy").build())
+                .withMessageContaining("ElementConverter must be not null");
     }
 
     @Test

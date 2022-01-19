@@ -22,17 +22,16 @@ public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
     private final String osUrl;
     private Properties openSearchClientProperties;
 
-    private static final ElementConverter<Object, String> ELEMENT_CONVERTER =
-            ((element, context) -> element.toString());
-
-    public OpenSearchSink(ElementConverter<InputT, String> elementConverter,
-                          Integer maxBatchSize,
-                          Integer maxInFlightRequests,
-                          Integer maxBufferedRequests,
-                          Long maxBatchSizeInBytes,
-                          Long maxTimeInBufferMS,
-                          Long maxRecordSizeInBytes,
-                          String osUrl, Properties openSearchClientProperties) {
+    public OpenSearchSink(
+            ElementConverter<InputT, String> elementConverter,
+            Integer maxBatchSize,
+            Integer maxInFlightRequests,
+            Integer maxBufferedRequests,
+            Long maxBatchSizeInBytes,
+            Long maxTimeInBufferMS,
+            Long maxRecordSizeInBytes,
+            String osUrl,
+            Properties openSearchClientProperties) {
         super(
                 elementConverter,
                 maxBatchSize,
@@ -52,8 +51,8 @@ public class OpenSearchSink<InputT> extends AsyncSinkBase<InputT, String> {
     }
 
     /**
-     * Create a {@link OpenSearchSinkBuilder} to allow the fluent construction of a new
-     * {@code OpenSearchSink}.
+     * Create a {@link OpenSearchSinkBuilder} to allow the fluent construction of a new {@code
+     * OpenSearchSink}.
      *
      * @param <InputT> type of incoming records
      * @return {@link OpenSearchSinkBuilder}

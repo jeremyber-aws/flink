@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -121,6 +122,11 @@ public class OpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, String
                     "Bulk index of {} documents took {}",
                     requestEntries.size(),
                     bulkResponse.getIngestTookInMillis());
+            List<String> failedEntries = new ArrayList<>();
+            //            for(BulkItemResponse bir: bulkResponse.getItems()){
+            //               if (needReprocess(bir)) {
+            //                   failedEntries.add(bir.)
+            //            }
         } catch (IOException ex) {
             ex.printStackTrace();
             System.exit(1);
@@ -132,6 +138,6 @@ public class OpenSearchSinkWriter<InputT> extends AsyncSinkWriter<InputT, String
 
     @Override
     protected long getSizeInBytes(String requestEntry) {
-        return requestEntry.length();
+        return requestEntry.getBytes().length;
     }
 }
