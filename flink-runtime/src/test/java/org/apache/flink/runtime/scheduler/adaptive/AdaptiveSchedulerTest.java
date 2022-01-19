@@ -114,6 +114,7 @@ import static org.apache.flink.runtime.jobmaster.slotpool.SlotPoolTestUtils.offe
 import static org.apache.flink.runtime.scheduler.SchedulerTestingUtils.enableCheckpointing;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
@@ -587,7 +588,8 @@ public class AdaptiveSchedulerTest extends TestLogger {
 
         assertThat(upTimeGauge.getValue(), greaterThan(0L));
         assertThat(downTimeGauge.getValue(), is(0L));
-        assertThat(restartTimeGauge.getValue(), greaterThan(0L));
+        // can be zero if the restart is very quick
+        assertThat(restartTimeGauge.getValue(), greaterThanOrEqualTo(0L));
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -727,13 +729,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
                 is(JobStatus.INITIALIZING));
 
         // transition into next state, for which the job state is still INITIALIZING
-        scheduler.goToWaitingForResources();
-
-        // sanity check
-        assertThat(
-                "Assumption about job status for Scheduler@WaitingForResources is incorrect.",
-                scheduler.requestJobStatus(),
-                is(JobStatus.INITIALIZING));
+        scheduler.transitionToState(new DummyState.Factory(JobStatus.INITIALIZING));
 
         assertThat(numStatusUpdates.get(), is(0));
     }
@@ -747,6 +743,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
         final Configuration configuration = new Configuration();
         configuration.set(JobManagerOptions.RESOURCE_WAIT_TIMEOUT, Duration.ofMillis(1L));
 
+        final CompletableFuture<Void> jobCreatedNotification = new CompletableFuture<>();
         final CompletableFuture<Void> jobRunningNotification = new CompletableFuture<>();
         final CompletableFuture<Void> jobFinishedNotification = new CompletableFuture<>();
         final CompletableFuture<JobStatus> unexpectedJobStatusNotification =
@@ -757,6 +754,9 @@ public class AdaptiveSchedulerTest extends TestLogger {
                         .setJobStatusListener(
                                 (jobId, newJobStatus, timestamp) -> {
                                     switch (newJobStatus) {
+                                        case CREATED:
+                                            jobCreatedNotification.complete(null);
+                                            break;
                                         case RUNNING:
                                             jobRunningNotification.complete(null);
                                             break;
@@ -795,6 +795,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
                                         submittedTask.getExecutionAttemptId(),
                                         ExecutionState.FINISHED)));
 
+        jobCreatedNotification.get();
         jobRunningNotification.get();
         jobFinishedNotification.get();
         assertThat(unexpectedJobStatusNotification.isDone(), is(false));
@@ -1262,6 +1263,16 @@ public class AdaptiveSchedulerTest extends TestLogger {
 
     static class DummyState implements State {
 
+        private final JobStatus jobStatus;
+
+        public DummyState() {
+            this(JobStatus.RUNNING);
+        }
+
+        public DummyState(JobStatus jobStatus) {
+            this.jobStatus = jobStatus;
+        }
+
         @Override
         public void cancel() {}
 
@@ -1270,7 +1281,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
 
         @Override
         public JobStatus getJobStatus() {
-            return JobStatus.RUNNING;
+            return jobStatus;
         }
 
         @Override
@@ -1288,6 +1299,16 @@ public class AdaptiveSchedulerTest extends TestLogger {
 
         private static class Factory implements StateFactory<DummyState> {
 
+            private final JobStatus jobStatus;
+
+            public Factory() {
+                this(JobStatus.RUNNING);
+            }
+
+            public Factory(JobStatus jobStatus) {
+                this.jobStatus = jobStatus;
+            }
+
             @Override
             public Class<DummyState> getStateClass() {
                 return DummyState.class;
@@ -1295,7 +1316,7 @@ public class AdaptiveSchedulerTest extends TestLogger {
 
             @Override
             public DummyState getState() {
-                return new DummyState();
+                return new DummyState(jobStatus);
             }
         }
     }
