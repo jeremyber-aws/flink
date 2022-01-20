@@ -6,6 +6,7 @@ import org.apache.flink.metrics.Counter;
 import org.apache.flink.metrics.groups.SinkWriterMetricGroup;
 import org.apache.flink.streaming.connectors.opensearch.OpenSearchConfigConstants;
 import org.apache.flink.util.FlinkRuntimeException;
+import org.apache.flink.util.StringUtils;
 import org.apache.flink.util.function.ThrowingRunnable;
 
 import org.apache.http.HttpHost;
@@ -97,7 +98,7 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
         try {
             emitter.open();
         } catch (Exception e) {
-            throw new FlinkRuntimeException("Failed to open the ElasticsearchEmitter", e);
+            throw new FlinkRuntimeException("Failed to open the OpenSearchEmitter", e);
         }
     }
 
@@ -119,7 +120,7 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
                             @Override
                             public void beforeBulk(long l, BulkRequest bulkRequest) {
                                 LOG.info(
-                                        "Sending bulk of {} actions to Elasticsearch.",
+                                        "Sending bulk of {} actions to OpenSearch.",
                                         bulkRequest.numberOfActions());
                                 lastSendTime = System.currentTimeMillis();
                                 numBytesOutCounter.inc(bulkRequest.estimatedSizeInBytes());
@@ -185,17 +186,15 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
     private RestHighLevelClient buildRestClient(
             String osUrl, Properties openSearchClientProperties) {
         RestHighLevelClient client;
+        String userName =
+                openSearchClientProperties.getProperty(
+                        OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME);
+        String password =
+                openSearchClientProperties.getProperty(
+                        OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD);
         // if username, password is available in properties
-        if (openSearchClientProperties.containsKey(
-                        OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME)
-                && openSearchClientProperties.contains(
-                        OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD)) {
-            String userName =
-                    openSearchClientProperties.getProperty(
-                            OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME);
-            String password =
-                    openSearchClientProperties.getProperty(
-                            OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD);
+        if (!StringUtils.isNullOrWhitespaceOnly(userName)
+                && !StringUtils.isNullOrWhitespaceOnly(password)) {
             final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(
                     AuthScope.ANY, new UsernamePasswordCredentials(userName, password));
@@ -312,7 +311,7 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
 
     private boolean isClosed() {
         if (closed) {
-            LOG.warn("Writer was closed before all records were acknowledged by Elasticsearch.");
+            LOG.warn("Writer was closed before all records were acknowledged by OpenSearch.");
         }
         return closed;
     }

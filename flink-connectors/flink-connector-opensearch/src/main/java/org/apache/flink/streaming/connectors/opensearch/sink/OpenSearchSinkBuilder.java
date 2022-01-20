@@ -28,7 +28,8 @@ public class OpenSearchSinkBuilder<InputT> {
      * fail.
      *
      * @param osUrl the name of the stream
-     * @return {@link org.apache.flink.streaming.connectors.opensearch.OpenSearchSinkBuilder} itself
+     * @return {@link org.apache.flink.streaming.connectors.opensearch.sink.OpenSearchSinkBuilder}
+     *     itself
      */
     public OpenSearchSinkBuilder<InputT> openSearchHost(String osUrl) {
         this.osUrl = osUrl;

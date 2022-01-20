@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /** OpenSearch Bulk configuration. */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BulkConfig {
+public class BulkConfig implements Serializable {
     private int bulkFlushMaxActions;
     private int bulkFlushMaxMb;
     private long bulkFlushInterval;
