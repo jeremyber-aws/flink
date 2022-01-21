@@ -12,7 +12,7 @@ public class OpenSearchSinkBuilder<InputT> {
     private int maxBatchSizeInMb = -1;
     private long bulkFlushInterval = -1;
     private FlushBackoffType bulkFlushBackoffType = FlushBackoffType.NONE;
-    private int bulkFlushBackoffRetries = -1;
+    private int bulkFlushBackoffRetries = 3;
     private long bulkFlushBackOffDelay = -1;
 
     private String osUrl;
