@@ -12,8 +12,8 @@ public class OpenSearchSinkBuilder<InputT> {
     private int maxBatchSizeInMb = -1;
     private long bulkFlushInterval = -1;
     private FlushBackoffType bulkFlushBackoffType = FlushBackoffType.NONE;
-    private int bulkFlushBackoffRetries = 3;
-    private long bulkFlushBackOffDelay = -1;
+    private int bulkBackoffRetries = 3;
+    private long bulkBackOffDelay = -1;
 
     private String osUrl;
     private Properties openSearchClientProperties;
@@ -58,12 +58,12 @@ public class OpenSearchSinkBuilder<InputT> {
     }
 
     public OpenSearchSinkBuilder<InputT> bulkFlushBackoffRetries(int bulkFlushBackoffRetries) {
-        this.bulkFlushBackoffRetries = bulkFlushBackoffRetries;
+        this.bulkBackoffRetries = bulkFlushBackoffRetries;
         return this;
     }
 
     public OpenSearchSinkBuilder<InputT> bulkFlushBackOffDelay(long bulkFlushBackOffDelay) {
-        this.bulkFlushBackOffDelay = bulkFlushBackOffDelay;
+        this.bulkBackOffDelay = bulkFlushBackOffDelay;
         return this;
     }
 
@@ -83,8 +83,8 @@ public class OpenSearchSinkBuilder<InputT> {
                 this.osUrl,
                 this.openSearchClientProperties,
                 BulkConfig.builder()
-                        .bulkBackOffDelay(this.bulkFlushBackOffDelay)
-                        .bulkBackoffMaxRetries(this.bulkFlushBackoffRetries)
+                        .bulkBackOffDelay(this.bulkBackOffDelay)
+                        .bulkBackoffMaxRetries(this.bulkBackoffRetries)
                         .bulkFlushInterval(this.bulkFlushInterval)
                         .bulkMaxSize(this.maxBatchSize)
                         .bulkMaxSizeInMb(this.maxBatchSizeInMb)
