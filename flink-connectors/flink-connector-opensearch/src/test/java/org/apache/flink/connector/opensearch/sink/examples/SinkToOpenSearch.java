@@ -17,7 +17,7 @@ import org.opensearch.common.xcontent.XContentType;
 import java.util.Properties;
 
 /** */
-public class SinkToOpenSearch2 {
+public class SinkToOpenSearch {
 
     public static void main(String[] args) throws Exception {
         // set up the streaming execution environment

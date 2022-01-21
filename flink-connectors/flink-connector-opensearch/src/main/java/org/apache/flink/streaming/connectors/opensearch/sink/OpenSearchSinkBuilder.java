@@ -8,6 +8,7 @@ import java.util.Properties;
  * @param <InputT>
  */
 public class OpenSearchSinkBuilder<InputT> {
+
     private int maxBatchSize = 5000;
     private int maxBatchSizeInMb = -1;
     private long bulkFlushInterval = -1;
@@ -57,12 +58,12 @@ public class OpenSearchSinkBuilder<InputT> {
         return this;
     }
 
-    public OpenSearchSinkBuilder<InputT> bulkFlushBackoffRetries(int bulkFlushBackoffRetries) {
+    public OpenSearchSinkBuilder<InputT> bulkBackoffMaxRetries(int bulkFlushBackoffRetries) {
         this.bulkBackoffRetries = bulkFlushBackoffRetries;
         return this;
     }
 
-    public OpenSearchSinkBuilder<InputT> bulkFlushBackOffDelay(long bulkFlushBackOffDelay) {
+    public OpenSearchSinkBuilder<InputT> bulkBackOffDelay(long bulkFlushBackOffDelay) {
         this.bulkBackOffDelay = bulkFlushBackOffDelay;
         return this;
     }
