@@ -39,12 +39,10 @@ public class SinkToOpenSearch {
         stream.countWindowAll(100);
         Properties clientConfig = new Properties();
         clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_USERNAME, "admin");
-        clientConfig.setProperty(
-                OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD, "xxxxxx");
+        clientConfig.setProperty(OpenSearchConfigConstants.BASIC_CREDENTIALS_PASSWORD, "xxxxxx");
         stream.sinkTo(
                 OpenSearchSink.<String>builder()
-                        .openSearchHost(
-                                "https://xxxxxxx-xxxx.us-east-1.es.amazonaws.com:443")
+                        .openSearchHost("https://xxxxxxx-xxxx.us-east-1.es.amazonaws.com:443")
                         .openSearchClientProperties(clientConfig)
                         .emitter(
                                 (String element,
