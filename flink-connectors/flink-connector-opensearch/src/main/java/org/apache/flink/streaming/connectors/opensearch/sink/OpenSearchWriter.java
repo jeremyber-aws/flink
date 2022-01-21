@@ -150,12 +150,13 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
                                         "OpenSearchErrorCallback");
                             }
                         });
-        if (bulkConfig.getBulkFlushMaxActions() != -1) {
-            builder.setBulkActions(bulkConfig.getBulkFlushMaxActions());
+        if (bulkConfig.getBulkMaxSize() != -1) {
+            builder.setBulkActions(bulkConfig.getBulkMaxSize());
         }
 
-        if (bulkConfig.getBulkFlushMaxMb() != -1) {
-            builder.setBulkSize(new ByteSizeValue(bulkConfig.getBulkFlushMaxMb(), ByteSizeUnit.MB));
+        if (bulkConfig.getBulkMaxSizeInMb() != -1) {
+            builder.setBulkSize(
+                    new ByteSizeValue(bulkConfig.getBulkMaxSizeInMb(), ByteSizeUnit.MB));
         }
 
         if (bulkConfig.getBulkFlushInterval() != -1) {
@@ -163,8 +164,8 @@ public class OpenSearchWriter<InputT> implements SinkWriter<InputT, Void, Void> 
         }
 
         BackoffPolicy backoffPolicy;
-        final TimeValue backoffDelay = new TimeValue(bulkConfig.getBulkFlushBackOffDelay());
-        final int maxRetryCount = bulkConfig.getBulkFlushBackoffRetries();
+        final TimeValue backoffDelay = new TimeValue(bulkConfig.getBulkBackOffDelay());
+        final int maxRetryCount = bulkConfig.getBulkBackoffMaxRetries();
         switch (bulkConfig.getFlushBackoffType()) {
             case CONSTANT:
                 backoffPolicy = BackoffPolicy.constantBackoff(backoffDelay, maxRetryCount);

@@ -13,10 +13,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Builder
 public class BulkConfig implements Serializable {
-    private int bulkFlushMaxActions;
-    private int bulkFlushMaxMb;
+    private int bulkMaxSize;
+    private int bulkMaxSizeInMb;
     private long bulkFlushInterval;
     private FlushBackoffType flushBackoffType;
-    private int bulkFlushBackoffRetries;
-    private long bulkFlushBackOffDelay;
+    private int bulkBackoffMaxRetries;
+    private long bulkBackOffDelay;
 }

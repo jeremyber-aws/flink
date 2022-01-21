@@ -83,11 +83,11 @@ public class OpenSearchSinkBuilder<InputT> {
                 this.osUrl,
                 this.openSearchClientProperties,
                 BulkConfig.builder()
-                        .bulkFlushBackOffDelay(this.bulkFlushBackOffDelay)
-                        .bulkFlushBackoffRetries(this.bulkFlushBackoffRetries)
+                        .bulkBackOffDelay(this.bulkFlushBackOffDelay)
+                        .bulkBackoffMaxRetries(this.bulkFlushBackoffRetries)
                         .bulkFlushInterval(this.bulkFlushInterval)
-                        .bulkFlushMaxActions(this.maxBatchSize)
-                        .bulkFlushMaxMb(this.maxBatchSizeInMb)
+                        .bulkMaxSize(this.maxBatchSize)
+                        .bulkMaxSizeInMb(this.maxBatchSizeInMb)
                         .flushBackoffType(this.bulkFlushBackoffType)
                         .build(),
                 this.emitter);
